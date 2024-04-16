@@ -2,17 +2,19 @@
     config(
         materialized='incremental', 
         incremental_strategy='merge', 
-        file_format='delta' , unique_key='tt_key'    )
+                file_format='delta', unique_key='tt_key'   )
 }}
 
-select date, concat(ticker, ts) tt_key, ts, ticker, aggregate_qty
+select date, concat(ticker, ts) tt_key, ts, ticker, avg_bid_pr, avg_ask_pr, avg_mid_pr 
   from (
-select date, 
+select date,
     cast(concat(date(ts), ' ', lpad(hour(ts), 2, '0'), ':', lpad(minute(ts), 2, '0'),  ':', '00') as timestamp) ts,
     ticker,
-    sum(case when side_cd = 'B' then quantity else -1*quantity end) aggregate_qty
+    avg(bid_pr) avg_bid_pr,
+    avg(ask_pr) avg_ask_pr, 
+    avg( bid_pr + ((ask_pr - bid_pr) / 2)) avg_mid_pr
 
-from {{ ref('stg_executions')}}
+from {{ ref('stg_quotes')}}
 
 {% if is_incremental() %}
 
@@ -22,5 +24,4 @@ from {{ ref('stg_executions')}}
 {% endif %}
 
 group by date, cast(concat(date(ts), ' ', lpad(hour(ts), 2, '0'), ':', lpad(minute(ts), 2, '0'),  ':', '00') as timestamp) ,
-    ticker
-  ) foo
+    ticker) foo

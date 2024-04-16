@@ -1,0 +1,21 @@
+version: 2
+
+sources:
+  - name: asset_mgmt
+    tables:
+      - name: trades
+      - name: quotes
+      - name: positions
+      - name: sentiment
+      - name: market_trades
+
+models:
+
+
+  - name: trades
+
+  - name: quotes
+
+  - name: stg_executions
+
+  - name: stg_quotes
